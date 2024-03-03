@@ -35,33 +35,42 @@ exports.getBookings = async (req, res, next) => {
 // @desc Get Single bookings
 // @route GET /api/v1/bookings/:id
 // @access Public
-// TODO: cannot return not own booking for user role
 exports.getBooking = async (req, res, next) => {
     try {
-        const booking = await Booking.findById(req.params.id).populate({
-            path: 'campground',
-            select: 'name address tel'
-        });
-
+      const currentUser = req.user; 
+        const booking = await Booking.findById(req.params.id)
+          .populate({
+            path: "campground",
+            select: "name address tel",
+          })
+  
         if (!booking) {
-            return res.status(404).json({
+          return res.status(404).json({
+            success: false,
+            message: "You don't have permission to access this booking",
+          });
+        }
+        if (booking.user.toString() !== req.user.id && req.user.role != 'admin') {
+            return res.status(401).json({
                 success: false,
-                message: `No booking with the id of ${req.params.id}`
+                message: `You don't have permission to access this booking`
             });
         }
-
+  
         res.status(200).json({
-            success: true,
-            data: booking
+          success: true,
+          data: booking,
         });
+      
     } catch (err) {
-        console.log(err);
-        return res.status(500).json({
-            success: false,
-            message: "Cannot find Booking"
-        });
+      console.log(err);
+      return res.status(500).json({
+        success: false,
+        message: "Cannot find Booking",
+      });
     }
-}
+  };
+  
 
 // @desc Add bookings
 // @route POST /api/v1/campground/:campgroundId/bookings
