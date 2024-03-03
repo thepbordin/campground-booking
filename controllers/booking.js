@@ -35,6 +35,7 @@ exports.getBookings = async (req, res, next) => {
 // @desc Get Single bookings
 // @route GET /api/v1/bookings/:id
 // @access Public
+// TODO: cannot return not own booking for user role
 exports.getBooking = async (req, res, next) => {
     try {
         const booking = await Booking.findById(req.params.id).populate({
