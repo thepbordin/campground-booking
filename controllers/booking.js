@@ -37,18 +37,18 @@ exports.getBookings = async (req, res, next) => {
 // @access Public
 exports.getBooking = async (req, res, next) => {
     try {
-      const currentUser = req.user; 
+        const currentUser = req.user;
         const booking = await Booking.findById(req.params.id)
-          .populate({
-            path: "campground",
-            select: "name address tel",
-          })
-  
+            .populate({
+                path: "campground",
+                select: "name address tel",
+            })
+
         if (!booking) {
-          return res.status(404).json({
-            success: false,
-            message: "You don't have permission to access this booking or Booking Not found",
-          });
+            return res.status(404).json({
+                success: false,
+                message: "You don't have permission to access this booking or Booking Not found",
+            });
         }
         if (booking.user.toString() !== req.user.id && req.user.role != 'admin') {
             return res.status(401).json({
@@ -56,21 +56,21 @@ exports.getBooking = async (req, res, next) => {
                 message: `You don't have permission to access this booking or Booking Not found`
             });
         }
-  
+
         res.status(200).json({
-          success: true,
-          data: booking,
+            success: true,
+            data: booking,
         });
-      
+
     } catch (err) {
-      console.log(err);
-      return res.status(500).json({
-        success: false,
-        message: "Cannot find Booking",
-      });
+        console.log(err);
+        return res.status(500).json({
+            success: false,
+            message: "Cannot find Booking",
+        });
     }
-  };
-  
+};
+
 
 // @desc Add bookings
 // @route POST /api/v1/campground/:campgroundId/bookings
@@ -156,14 +156,14 @@ exports.updateBooking = async (req, res, next) => {
 exports.deleteBooking = async (req, res, next) => {
     try {
         const booking = await Booking.findById(req.params.id);
-        
+
         if (!booking) {
             return res.status(404).json({
                 success: false,
                 message: `No booking with the id of ${req.params.id}`
             });
         }
-        
+
         if (booking.user.toString() !== req.user.id && req.user.role != 'admin') {
             return res.status(401).json({
                 success: false,
@@ -171,17 +171,57 @@ exports.deleteBooking = async (req, res, next) => {
             });
         }
 
-        await Booking.deleteOne();
+        const deleted = await booking.deleteOne();
 
         res.status(200).json({
             success: true,
-            data: {}
+            deletedCount: deleted.deletedCount
         });
     } catch (err) {
         console.log(err);
         return res.status(500).json({
             success: false,
             message: "Cannot delete Booking"
+        });
+    }
+}
+
+exports.deleteBookings = async (req, res, next) => {
+    try {
+        if (!req.params.campgroundId) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide campground id"
+            });
+        }
+        if (!req.body.bookDate) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide booking date"
+            });
+        }
+        console.log(req.body.bookDate);
+
+        const date = new Date(req.body.bookDate);
+        date.setHours(0, 0, 0, 0);
+        // DELETE ALL BOOKING IN DATE
+        const DeletedBookings = await Booking.deleteMany({
+            campground: req.params.campgroundId,
+            bookDate: {
+                $gte: date,
+                $lt: new Date(date.getTime() + 24 * 60 * 60 * 1000)
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            counts: DeletedBookings.deletedCount
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            success: false,
+            message: "Cannot delete Bookings"
         });
     }
 }
