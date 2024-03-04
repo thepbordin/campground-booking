@@ -47,13 +47,13 @@ exports.getBooking = async (req, res, next) => {
         if (!booking) {
           return res.status(404).json({
             success: false,
-            message: "You don't have permission to access this booking",
+            message: "You don't have permission to access this booking or Booking Not found",
           });
         }
         if (booking.user.toString() !== req.user.id && req.user.role != 'admin') {
             return res.status(401).json({
                 success: false,
-                message: `You don't have permission to access this booking`
+                message: `You don't have permission to access this booking or Booking Not found`
             });
         }
   
