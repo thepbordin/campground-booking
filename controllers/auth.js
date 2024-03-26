@@ -25,21 +25,21 @@ exports.login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            res.status(400).json({ success: false });
+            return res.status(400).json({ success: false });
         }
         const user = await User.findOne(({ email })).select('+password');
         if (!user) {
-            res.status(401).json({ success: false, msg: 'Invalid credentials' });
+            return res.status(401).json({ success: false, msg: 'Invalid credentials' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            res.status(401).json({ success: false, msg: 'Invalid credentials' });
+            return res.status(401).json({ success: false, msg: 'Invalid credentials' });
         }
 
         // const token = user.getSignedJwtToken();
         // res.status(200).json({ success: true, token });
-
+        console.log('Login success' + user.name)
         sendTokenResponse(user, 200, res);
     }
     catch (e) {
