@@ -20,7 +20,7 @@ exports.getBookings = async (req, res, next) => {
         } else {
             query = Booking.find().populate({
                 path: 'campground',
-                select: 'name province tel'
+                select: 'name province tel address'
             });
         }
     }
