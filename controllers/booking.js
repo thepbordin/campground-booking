@@ -9,7 +9,7 @@ exports.getBookings = async (req, res, next) => {
     if (req.user.role !== 'admin') {
         query = Booking.find({ user: req.user.id }).populate({
             path: 'campground',
-            select: 'name province tel'
+            select: 'name province tel address imgSrc'
         });
     } else {
         if (req.params.campgroundId) {
